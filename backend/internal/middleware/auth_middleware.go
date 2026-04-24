@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pocket-id/pocket-id/backend/internal/common"
 	"github.com/pocket-id/pocket-id/backend/internal/service"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // AuthMiddleware is a wrapper middleware that delegates to either API key or JWT authentication
@@ -74,8 +76,12 @@ func (m *AuthMiddleware) WithApiKeyAuthDisabled() *AuthMiddleware {
 
 func (m *AuthMiddleware) Add() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		span := trace.SpanFromContext(c.Request.Context())
+
 		userID, isAdmin, authenticationMethod, err := m.jwtMiddleware.Verify(c, m.options.AdminRequired)
 		if err == nil {
+			span.SetAttributes(attribute.String("user.id", userID))
+
 			c.Set("userID", userID)
 			c.Set("userIsAdmin", isAdmin)
 			c.Set("authenticationMethod", authenticationMethod)
@@ -111,6 +117,8 @@ func (m *AuthMiddleware) Add() gin.HandlerFunc {
 		// JWT auth failed, try API key auth
 		userID, isAdmin, err = m.apiKeyMiddleware.Verify(c, m.options.AdminRequired)
 		if err == nil {
+			span.SetAttributes(attribute.String("user.id", userID))
+
 			c.Set("userID", userID)
 			c.Set("userIsAdmin", isAdmin)
 			if c.IsAborted() {

@@ -7,6 +7,8 @@ import (
 	"github.com/pocket-id/pocket-id/backend/internal/common"
 
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/time/rate"
 )
 
@@ -42,6 +44,12 @@ func (m *RateLimitMiddleware) Add(limit rate.Limit, burst int) gin.HandlerFunc {
 
 		limiter := getLimiter(ip, limit, burst, &mu, clients)
 		if !limiter.Allow() {
+			span := trace.SpanFromContext(c.Request.Context())
+			span.AddEvent(
+				"exceed_rate_limit",
+				trace.WithAttributes(attribute.String("client.address", ip)),
+			)
+
 			_ = c.Error(&common.TooManyRequestsError{})
 			c.Abort()
 			return

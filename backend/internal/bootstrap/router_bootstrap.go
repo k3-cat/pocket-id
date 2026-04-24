@@ -109,6 +109,7 @@ func configureEngine(r *gin.Engine) {
 }
 
 func registerGlobalMiddleware(r *gin.Engine) {
+	r.Use(middleware.OtelCfAttributes())
 	r.Use(middleware.HeadMiddleware())
 	r.Use(middleware.NewCacheControlMiddleware().Add())
 	r.Use(middleware.NewCorsMiddleware().Add())

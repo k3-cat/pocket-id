@@ -17,6 +17,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
+	gormTracing "gorm.io/plugin/opentelemetry/tracing"
 
 	"github.com/pocket-id/pocket-id/backend/internal/common"
 	"github.com/pocket-id/pocket-id/backend/internal/utils"
@@ -108,6 +109,11 @@ func ConnectDatabase() (db *gorm.DB, err error) {
 		})
 		if err == nil {
 			slog.Info("Connected to database", slog.String("provider", string(common.EnvConfig.DbProvider)))
+
+			err := db.Use(gormTracing.NewPlugin())
+			if err != nil {
+				panic(err)
+			}
 
 			if onConnFn != nil {
 				conn, err := db.DB()

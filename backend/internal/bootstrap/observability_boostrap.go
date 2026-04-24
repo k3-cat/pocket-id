@@ -10,6 +10,7 @@ import (
 
 	sloggin "github.com/gin-contrib/slog"
 
+	otelpyroscope "github.com/grafana/otel-profiling-go"
 	"github.com/lmittmann/tint"
 	"github.com/mattn/go-isatty"
 	"go.opentelemetry.io/contrib/bridges/otelslog"
@@ -147,7 +148,8 @@ func initOtelTracing(ctx context.Context, traces bool, resource *resource.Resour
 		sdktrace.WithBatcher(tr),
 	)
 
-	otel.SetTracerProvider(tp)
+	pyroscopeTp := otelpyroscope.NewTracerProvider(tp)
+	otel.SetTracerProvider(pyroscopeTp)
 	otel.SetTextMapPropagator(
 		propagation.NewCompositeTextMapPropagator(
 			propagation.TraceContext{},

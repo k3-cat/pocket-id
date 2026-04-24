@@ -15,6 +15,12 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      FARO_API_KEY: ${{ secrets.FARO_API_KEY }}
+      FARO_APP_ID: ${{ vars.FARO_APP_ID }}
+      FARO_ENDPOINT: ${{ vars.FARO_ENDPOINT }}
+      FARO_STACK_ID: ${{ vars.FARO_STACK_ID }}
+      VITE_FARO_DSN: ${{ vars.VITE_FARO_DSN }}
+      VITE_CLARITY_ID: ${{ vars.VITE_CLARITY_ID }}
       BUILD_OUTPUT_PATH: ${{ github.workspace }}/backend/frontend/dist/
 
     steps:

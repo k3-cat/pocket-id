@@ -3,6 +3,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import viteCompression from 'vite-plugin-compression';
+import faroUploader from '@grafana/faro-rollup-plugin';
 
 export default defineConfig((mode) => {
 	return {
@@ -30,6 +31,17 @@ export default defineConfig((mode) => {
 				algorithm: 'brotliCompress',
 				ext: '.br',
 				filter: /\.(js|mjs|json|css)$/i
+			}),
+
+			// Upload source mpa
+			faroUploader({
+				appName: 'pocket-id-web',
+				endpoint: process.env.FARO_ENDPOINT!,
+				appId: process.env.FARO_APP_ID!,
+				stackId: process.env.FARO_STACK_ID!,
+				verbose: true,
+				apiKey: process.env.FARO_API_KEY!,
+				gzipContents: true
 			})
 		],
 

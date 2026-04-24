@@ -1,0 +1,95 @@
+# $schema: https://json.schemastore.org/github-workflow.json
+
+name: "_ Build _"
+
+on:
+  workflow_call:
+    outputs:
+      result_val:
+        description: "The output value"
+        value: ${{ jobs.build-backend.outputs.files }}
+
+jobs:
+  build-frontend:
+    name: Build frontend
+    runs-on: ubuntu-latest
+
+    env:
+      BUILD_OUTPUT_PATH: ${{ github.workspace }}/backend/frontend/dist/
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v5
+        with:
+          cache: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: latest
+
+      - name: Install frontend dependencies
+        run: pnpm --filter pocket-id-frontend install --frozen-lockfile
+
+      - name: Run pnpm build
+        working-directory: frontend
+        run: pnpm --filter pocket-id-frontend run build
+
+      - name: Set short git commit SHA
+        id: commit-id
+        run: echo "val=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Upload frontend dist
+        uses: actions/upload-artifact@v7
+        with:
+          name: fronted-build-${{ steps.commit-id.outputs.val }}
+          path: backend/frontend/dist/
+
+  build-backend:
+    name: Build backend
+    needs: build-frontend
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: Set short git commit SHA
+        id: commit-id
+        run: echo "val=$(echo ${{ github.sha }} | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Download fronted dist
+        uses: actions/download-artifact@v8
+        with:
+          name: fronted-build-${{ steps.commit-id.outputs.val }}
+          path: backend/frontend/dist/
+
+      - name: Run build script
+        run: sh scripts/development/build-binaries.sh
+
+      - name: Generate digests
+        run: |
+          for file in backend/build/*; do
+            sha256sum $file >> backend/build/digests.txt
+          done
+
+      - name: Upload build directory
+        uses: actions/upload-artifact@v7
+        with:
+          name: backend-build-${{ steps.commit-id.outputs.val }}
+          path: backend/build/
+
+      - name: List build files
+        id: list-files
+        run: |
+          files=$(ls -1 backend/build/ | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "files=$files" >> $GITHUB_OUTPUT

@@ -1,7 +1,7 @@
 # This Dockerfile embeds a pre-built binary for the given Linux architecture
 # Binaries must be built using "./scripts/development/build-binaries.sh --docker-only"
 
-FROM alpine:3.23.4
+FROM alpine:latest
 
 # TARGETARCH can be "amd64" or "arm64"
 ARG TARGETARCH
@@ -10,13 +10,13 @@ WORKDIR /app
 
 RUN apk add --no-cache curl su-exec
 
-COPY ./backend/.bin/pocket-id-linux-${TARGETARCH} /app/pocket-id
-COPY ./scripts/docker /app/docker
+COPY --chmod=0755 ./backend/build/pocket-id-linux-${TARGETARCH} /usr/bin/pocket-id
+COPY --chmod=0755 ./scripts/docker /app/docker
 
 EXPOSE 1411
 ENV APP_ENV=production
 
-HEALTHCHECK --interval=90s --timeout=5s --start-period=10s --retries=3 CMD [ "/app/pocket-id", "healthcheck" ]
+HEALTHCHECK --interval=90s --timeout=5s --start-period=10s --retries=3 CMD [ "/usr/bin/pocket-id", "healthcheck" ]
 
 ENTRYPOINT ["/app/docker/entrypoint.sh"]
-CMD ["/app/pocket-id"]
+CMD ["/usr/bin/pocket-id"]

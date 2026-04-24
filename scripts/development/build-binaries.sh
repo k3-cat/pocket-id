@@ -1,6 +1,6 @@
 set -eu
 cd backend
-mkdir -p .bin
+mkdir -p build
 
 # Check for --docker-only flag
 DOCKER_ONLY=false
@@ -26,12 +26,15 @@ build_platform() {
         binary_ext=".exe"
     fi
 
-    output_dir=".bin/pocket-id-${target}${binary_ext}"
+    output_dir="build/pocket-id-${target}${binary_ext}"
 
     printf "Building %s/%s%s" "$os" "$arch" "$([ -n "$arm_version" ] && echo " GOARM=$arm_version" || echo "")... "
 
     # Build environment variables
     env_vars="CGO_ENABLED=0 GOOS=${os} GOARCH=${arch}"
+    if [ "$arch" = "amd64" ]; then
+        env_vars="${env_vars} GOAMD64=v3"
+    fi
     if [ -n "$arm_version" ]; then
         env_vars="${env_vars} GOARM=${arm_version}"
     fi
@@ -54,7 +57,6 @@ else
     echo "Building for all platforms..."
     # linux builds
     build_platform "linux-amd64" "linux" "amd64" ""
-    build_platform "linux-386" "linux" "386" ""
     build_platform "linux-arm64" "linux" "arm64" ""
     build_platform "linux-armv7" "linux" "arm" "7"
 

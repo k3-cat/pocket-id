@@ -1,0 +1,28 @@
+# $schema: https://json.schemastore.org/github-workflow.json
+
+name: "Package main Branch"
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: check-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  docker:
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+
+    needs: build
+    uses: ./.github/workflows/docker.yml
+    with:
+      version-tag: next

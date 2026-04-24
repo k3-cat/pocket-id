@@ -1,0 +1,15 @@
+# = = = = = Production Image = = = = =
+FROM gcr.io/distroless/static:latest
+
+# TARGETARCH can be "amd64" or "arm64"
+ARG TARGETARCH
+
+# - - - - -
+COPY --chmod=0755 ./backend/build/pocket-id-linux-${TARGETARCH} /usr/bin/pocket-id
+
+# - - - - -
+ENV APP_ENV=production
+
+HEALTHCHECK --interval=90s --timeout=5s --start-period=10s --retries=3 CMD [ "/usr/bin/pocket-id", "healthcheck" ]
+
+CMD ["/usr/bin/pocket-id"]

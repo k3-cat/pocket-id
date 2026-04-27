@@ -76,7 +76,7 @@ func init() {
 		},
 	}
 
-	healthcheckCmd.Flags().StringVarP(&flags.Endpoint, "endpoint", "e", "http://localhost:"+common.EnvConfig.Port, "Endpoint for Pocket ID")
+	healthcheckCmd.Flags().StringVarP(&flags.Endpoint, "endpoint", "e", common.EnvConfig.AppURL, "Endpoint for Pocket ID")
 	healthcheckCmd.Flags().BoolVarP(&flags.Verbose, "verbose", "v", false, "Enable verbose mode")
 
 	rootCmd.AddCommand(healthcheckCmd)

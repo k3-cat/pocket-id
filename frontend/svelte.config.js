@@ -24,6 +24,12 @@ const config = {
 		}),
 		version: {
 			name: packageJson.version
+		},
+		prerender: {
+			entries: []
+		},
+		csp: {
+			mode: 'auto'
 		}
 	}
 };

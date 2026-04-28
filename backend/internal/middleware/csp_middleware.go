@@ -30,14 +30,14 @@ func (m *CspMiddleware) Add() gin.HandlerFunc {
 		c.Set("csp_nonce", nonce)
 
 		csp := "default-src 'self'; " +
-			"base-uri 'self'; " +
 			"object-src 'none'; " +
 			"frame-ancestors 'none'; " +
-			"form-action 'self'; " +
 			"img-src * blob:;" +
-			"font-src 'self'; " +
 			"style-src 'self' 'unsafe-inline'; " +
-			"script-src 'self' 'nonce-" + nonce + "'"
+			"script-src 'self' 'nonce-" + nonce + "'; " +
+			"script-src-elem 'self' static.cloudflareinsights.com www.clarity.ms browser.sentry-cdn.com; " +
+			"frame-src 'self' challenges.cloudflare.com *.clarity.ms; " +
+			"connect-src 'self' *.grafana.net cloudflareinsights.com *.clarity.ms; "
 
 		c.Writer.Header().Set("Content-Security-Policy", csp)
 		c.Next()

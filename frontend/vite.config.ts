@@ -55,6 +55,22 @@ export default defineConfig((mode) => {
 					target: process.env.DEVELOPMENT_BACKEND_URL || 'http://localhost:1411'
 				}
 			}
+		},
+
+		build: {
+			ssr: false,
+			rolldownOptions: {
+				output: {
+					minify: true,
+					codeSplitting: {
+						groups: [
+							{ test: /node_modules/, name: 'vendor' },
+							{ test: /frontend\/src\/lib\/components/, name: 'components' },
+							{ test: /frontend\/src\/routes/, name: 'routes' }
+						]
+					}
+				}
+			}
 		}
 	};
 });
